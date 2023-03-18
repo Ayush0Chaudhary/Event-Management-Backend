@@ -1,13 +1,37 @@
 const express= require('express');
 const bodyParser = require('body-parser');
-
+const graphqlHttp = require('express-graphql');
+const { buildSchema } = require('graphql');
 const app = express();
 
 app.use(bodyParser.json());
 
-app.get('/', (req,res,next) => {
-    res.send('hellow worl')
-})
+app.use('/graphql', graphqlHttp.graphqlHTTP({
+     schema: buildSchema(`
+        type RootQuery {
+            events: [String!]!
+        }
+
+        type RootMutation {
+            createEvent(name: String): String
+        }
+
+        schema{
+            query: RootQuery
+            mutation: RootMutation
+        }
+     `),
+     rootValue: {
+        events: () => {
+            return ['Roma', 'all night', 'dhhfs'];
+        },
+        createEvent: (args) => {
+            const eventNME = args.name;
+            return eventNME;
+        } 
+     },
+     graphiql: true
+}));
 
 
 app.listen(3000);
